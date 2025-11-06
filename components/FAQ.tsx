@@ -1,117 +1,42 @@
-"use client";
-
-import { useRef, useState } from "react";
-import type { JSX } from "react";
-
-// <FAQ> component is a lsit of <Item> component
-// Just import the FAQ & add your FAQ content to the const faqList arrayy below.
-
-interface FAQItemProps {
-  question: string;
-  answer: JSX.Element;
-}
-
-const faqList: FAQItemProps[] = [
-  {
-    question: "What do I get exactly?",
-    answer: <div className="space-y-2 leading-relaxed">Loreum Ipseum</div>,
-  },
-  {
-    question: "Can I get a refund?",
-    answer: (
-      <p>
-        Yes! You can request a refund within 7 days of your purchase. Reach out
-        by email.
-      </p>
-    ),
-  },
-  {
-    question: "I have another question",
-    answer: (
-      <div className="space-y-2 leading-relaxed">Cool, contact us by email</div>
-    ),
-  },
-];
-
-const FaqItem = ({ item }: { item: FAQItemProps }) => {
-  const accordion = useRef(null);
-  const [isOpen, setIsOpen] = useState(false);
-
+export default function FAQ() {
   return (
-    <li>
-      <button
-        className="relative flex gap-2 items-center w-full py-5 text-base font-semibold text-left border-t md:text-lg border-base-content/10"
-        onClick={(e) => {
-          e.preventDefault();
-          setIsOpen(!isOpen);
-        }}
-        aria-expanded={isOpen}
-      >
-        <span
-          className={`flex-1 text-base-content ${isOpen ? "text-primary" : ""}`}
-        >
-          {item?.question}
-        </span>
-        <svg
-          className={`flex-shrink-0 w-4 h-4 ml-auto fill-current`}
-          viewBox="0 0 16 16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect
-            y="7"
-            width="16"
-            height="2"
-            rx="1"
-            className={`transform origin-center transition duration-200 ease-out ${
-              isOpen && "rotate-180"
-            }`}
-          />
-          <rect
-            y="7"
-            width="16"
-            height="2"
-            rx="1"
-            className={`transform origin-center rotate-90 transition duration-200 ease-out ${
-              isOpen && "rotate-180 hidden"
-            }`}
-          />
-        </svg>
-      </button>
-
-      <div
-        ref={accordion}
-        className={`transition-all duration-300 ease-in-out opacity-80 overflow-hidden`}
-        style={
-          isOpen
-            ? { maxHeight: accordion?.current?.scrollHeight, opacity: 1 }
-            : { maxHeight: 0, opacity: 0 }
-        }
-      >
-        <div className="pb-5 leading-relaxed">{item?.answer}</div>
-      </div>
-    </li>
-  );
-};
-
-const FAQ = () => {
-  return (
-    <section className="bg-base-200" id="faq">
-      <div className="py-24 px-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-12">
-        <div className="flex flex-col text-left basis-1/2">
-          <p className="inline-block font-semibold text-primary mb-4">FAQ</p>
-          <p className="sm:text-4xl text-3xl font-extrabold text-base-content">
-            Frequently Asked Questions
-          </p>
+    <section className="w-full py-16 md:py-20">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl md:text-4xl font-extrabold">FAQ</h2>
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <div className="rounded-xl border p-5">
+            <div className="font-semibold">
+              How does ProofPad help with disputes?
+            </div>
+            <div className="opacity-80 text-sm mt-2">
+              It shows a time-stamped log of file views and downloads tied to an
+              asset, which many platforms accept as proof of delivery or use.
+            </div>
+          </div>
+          <div className="rounded-xl border p-5">
+            <div className="font-semibold">
+              Do I need to change my storefront?
+            </div>
+            <div className="opacity-80 text-sm mt-2">
+              No. Add your file links here and share them from your library or
+              continue using your existing store.
+            </div>
+          </div>
+          <div className="rounded-xl border p-5">
+            <div className="font-semibold">Can I export a receipt?</div>
+            <div className="opacity-80 text-sm mt-2">
+              Yes. The receipt page is printable and can be saved as a PDF.
+            </div>
+          </div>
+          <div className="rounded-xl border p-5">
+            <div className="font-semibold">Is this private?</div>
+            <div className="opacity-80 text-sm mt-2">
+              Only you can see your library and logs. Public links show just the
+              receipt details you choose to share.
+            </div>
+          </div>
         </div>
-
-        <ul className="basis-1/2">
-          {faqList.map((item, i) => (
-            <FaqItem key={i} item={item} />
-          ))}
-        </ul>
       </div>
     </section>
   );
-};
-
-export default FAQ;
+}
