@@ -1,30 +1,28 @@
-import { NextResponse } from "next/server";
 import dbConnect from "@/libs/mongoose";
 import Proof from "@/models/Proof";
+import { NextResponse } from "next/server";
 
+// GET /api/proof -> list newest first
 export async function GET() {
   await dbConnect();
   const proofs = await Proof.find().sort({ createdAt: -1 }).lean();
   return NextResponse.json(proofs);
 }
 
+// POST /api/proof -> expects JSON: { userId?, title, imageUrl }
 export async function POST(req: Request) {
   await dbConnect();
+  try {
+    const { userId, title, imageUrl } = await req.json();
 
-  const form = await req.formData();
-  const title = String(form.get("title") || "");
-  const file = form.get("file") as File | null;
+    if (!title || !imageUrl) {
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
 
-  if (!title || !file) {
-    return NextResponse.json(
-      { error: "Missing title or file" },
-      { status: 400 }
-    );
+    const created = await Proof.create({ userId, title, imageUrl });
+    return NextResponse.json(created, { status: 201 });
+  } catch (err) {
+    console.error("Error creating proof:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const base64 = `data:${file.type};base64,${bytes.toString("base64")}`;
-
-  const doc = await (Proof as any).create({ title, imageUrl: base64 });
-  return NextResponse.json(doc, { status: 201 });
 }

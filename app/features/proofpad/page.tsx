@@ -9,6 +9,15 @@ type Proof = {
   createdAt: string;
 };
 
+function fileToDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ProofPadPage() {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -16,7 +25,7 @@ export default function ProofPadPage() {
   const [submitting, setSubmitting] = useState(false);
 
   async function load() {
-    const res = await fetch("/api/proof");
+    const res = await fetch("/api/proof", { cache: "no-store" });
     const data = await res.json();
     setItems(data);
   }
@@ -29,20 +38,25 @@ export default function ProofPadPage() {
     e.preventDefault();
     if (!file) return;
     setSubmitting(true);
-
-    const fd = new FormData();
-    fd.append("title", title);
-    fd.append("file", file);
-
-    const res = await fetch("/api/proof", { method: "POST", body: fd });
-    setSubmitting(false);
-
-    if (res.ok) {
-      setTitle("");
-      setFile(null);
-      await load();
-    } else {
-      alert("Upload failed");
+    try {
+      const imageUrl = await fileToDataURL(file); // convert to data URL
+      const res = await fetch("/api/proof", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, imageUrl }),
+      });
+      setSubmitting(false);
+      if (res.ok) {
+        setTitle("");
+        setFile(null);
+        await load();
+      } else {
+        const j = await res.json().catch(() => ({}));
+        alert(`Upload failed: ${j.error || res.status}`);
+      }
+    } catch (err) {
+      setSubmitting(false);
+      alert("Could not read file");
     }
   }
 
