@@ -1,15 +1,28 @@
 import mongoose from "mongoose";
-import User from "@/models/User";
 
-const connectMongo = async () => {
-  if (!process.env.MONGODB_URI) {
-    throw new Error(
-      "Add the MONGODB_URI environment variable inside .env.local to use mongoose"
-    );
+const MONGODB_URI = process.env.MONGODB_URI as string;
+
+if (!MONGODB_URI) {
+  throw new Error("Missing MONGODB_URI environment variable");
+}
+
+let cached = (global as any).mongoose || { conn: null, promise: null };
+
+async function dbConnect() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(MONGODB_URI, {
+        dbName: "shipfast",
+      })
+      .then((mongoose) => mongoose);
   }
-  return mongoose
-    .connect(process.env.MONGODB_URI)
-    .catch((e) => console.error("Mongoose Client Error: " + e.message));
-};
 
-export default connectMongo;
+  cached.conn = await cached.promise;
+  (global as any).mongoose = cached;
+
+  return cached.conn;
+}
+
+export default dbConnect;
