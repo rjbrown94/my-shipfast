@@ -1,54 +1,65 @@
+"use client";
+
+import ButtonSignin from "./ButtonSignin";
+
+const plans = [
+  {
+    name: "Free",
+    price: "$0",
+    description: "Try ProofPad with basic features.",
+    badge: "Start free",
+  },
+  {
+    name: "Creator",
+    price: "$9/mo",
+    description:
+      "Perfect for creators who send receipts, screenshots, or files to clients.",
+    badge: "Most popular",
+  },
+  {
+    name: "Business",
+    price: "$29/mo",
+    description:
+      "For teams who need advanced proof tracking for disputes and clients.",
+    badge: "Best value",
+  },
+];
+
 export default function Pricing() {
   return (
-    <section id="pricing" className="w-full py-16 md:py-20 bg-base-200">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-extrabold">Simple pricing</h2>
-        <p className="opacity-80 mt-2">
-          Start free. Upgrade when you need more assets and receipts.
+    <main className="min-h-screen px-6 py-16 bg-white">
+      <div className="max-w-4xl mx-auto text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4">Choose your plan</h1>
+        <p className="text-gray-600">
+          Select a plan. If you're not logged in, you'll be asked to log in
+          first.
         </p>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl border p-6">
-            <div className="text-sm font-semibold opacity-70">Free</div>
-            <div className="mt-2 text-4xl font-extrabold">$0</div>
-            <ul className="mt-4 space-y-2 text-sm opacity-80">
-              <li>Up to 5 assets</li>
-              <li>Usage receipts</li>
-              <li>Basic logging</li>
-            </ul>
-            <a className="btn btn-primary mt-6 w-full" href="/library">
-              Start Free
-            </a>
-          </div>
-          <div className="rounded-2xl border p-6 ring-2 ring-primary">
-            <div className="text-sm font-semibold opacity-70">Pro</div>
-            <div className="mt-2 text-4xl font-extrabold">
-              $10<span className="text-base font-medium opacity-70">/mo</span>
-            </div>
-            <ul className="mt-4 space-y-2 text-sm opacity-80">
-              <li>Unlimited assets</li>
-              <li>Advanced logs</li>
-              <li>Export receipts</li>
-            </ul>
-            <a className="btn btn-primary mt-6 w-full" href="/library">
-              Upgrade
-            </a>
-          </div>
-          <div className="rounded-2xl border p-6">
-            <div className="text-sm font-semibold opacity-70">Teams</div>
-            <div className="mt-2 text-4xl font-extrabold">
-              $49<span className="text-base font-medium opacity-70">/mo</span>
-            </div>
-            <ul className="mt-4 space-y-2 text-sm opacity-80">
-              <li>Team seats</li>
-              <li>Custom branding</li>
-              <li>Priority support</li>
-            </ul>
-            <a className="btn btn-primary mt-6 w-full" href="/library">
-              Contact Sales
-            </a>
-          </div>
-        </div>
       </div>
-    </section>
+
+      <section className="max-w-5xl mx-auto grid gap-8 md:grid-cols-3">
+        {plans.map((plan) => (
+          <div
+            key={plan.name}
+            className="border rounded-2xl p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition"
+          >
+            {plan.badge && (
+              <span className="text-xs uppercase tracking-wide mb-3 bg-black text-white px-3 py-1 rounded-full">
+                {plan.badge}
+              </span>
+            )}
+
+            <h2 className="text-2xl font-semibold mb-2">{plan.name}</h2>
+
+            <p className="text-3xl font-bold mb-4">{plan.price}</p>
+
+            <p className="text-gray-500 text-sm mb-6">{plan.description}</p>
+
+            <div className="mt-auto w-full">
+              <ButtonSignin callbackUrl="/proofpad" />
+            </div>
+          </div>
+        ))}
+      </section>
+    </main>
   );
 }

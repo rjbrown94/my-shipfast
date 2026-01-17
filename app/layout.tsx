@@ -1,11 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "ProofPad",
-  description:
-    "Usage receipts for digital downloads. Win refunds and disputes with proof.",
-};
+import LayoutClient from "@/components/LayoutClient";
 
 export default function RootLayout({
   children,
@@ -13,8 +7,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="light">
-      <body>{children}</body>
+    <html lang="en">
+      <body>
+        <LayoutClient>{children}</LayoutClient>
+      </body>
     </html>
   );
 }
