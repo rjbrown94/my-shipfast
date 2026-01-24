@@ -1,5 +1,4 @@
 import "./globals.css";
-import LayoutClient from "@/components/LayoutClient";
 
 export default function RootLayout({
   children,
@@ -8,9 +7,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <LayoutClient>{children}</LayoutClient>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

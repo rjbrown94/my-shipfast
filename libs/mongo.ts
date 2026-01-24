@@ -1,38 +1,26 @@
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 
-// This lib is use just to connect to the database in next-auth.
-// We don't use it anywhere else in the API routes—we use mongoose.js instead (to be able to use models)
-// See /libs/nextauth.js file.
+const MONGODB_URI = process.env.MONGODB_URI!;
 
-declare global {
-  // eslint-disable-next-line no-unused-vars
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
+if (!MONGODB_URI) {
+  throw new Error("Missing MONGODB_URI");
 }
 
-const uri = process.env.MONGODB_URI;
-const options = {};
+let cached = (global as any).mongoose;
 
-let client: MongoClient | undefined;
-let clientPromise: Promise<MongoClient> | undefined;
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
 
-if (!uri) {
-  console.group("⚠️ MONGODB_URI missing from .env");
-  console.error(
-    "It's not mandatory but a database is required for Magic Links."
-  );
-  console.error(
-    "If you don't need it, remove the code from /libs/next-auth.js (see connectMongo())"
-  );
-  console.groupEnd();
-} else if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+export async function connectMongo() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
+    });
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
-}
 
-export default clientPromise;
+  cached.conn = await cached.promise;
+  return cached.conn;
+}

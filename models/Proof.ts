@@ -1,16 +1,16 @@
-import mongoose, { Schema, models, model } from "mongoose";
+import mongoose, { Schema, model, models } from "mongoose";
 
 const ProofSchema = new Schema(
   {
-    userId: { type: String, required: true },
-    title: { type: String, required: true },
-    imageUrl: { type: String, required: true },
+    userEmail: { type: String, required: true, index: true },
+    proofType: { type: String, required: true },
+    note: { type: String, default: "" },
+    url: { type: String, required: true },
+    name: { type: String, required: true },
+    mimeType: { type: String, required: true },
+    size: { type: Number, required: true },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true },
 );
 
-const Proof = models.Proof || model("Proof", ProofSchema);
-
-export default Proof;
+export default models.Proof || model("Proof", ProofSchema);
