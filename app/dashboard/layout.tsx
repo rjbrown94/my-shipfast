@@ -1,37 +1,49 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/libs/next-auth";
 import LogoutButton from "@/components/LogoutButton";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-6xl px-6 py-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-semibold text-white">
-              ProofPad Dashboard
-            </div>
-            <div className="text-xs text-white/60">
-              Upload and organize proof
-            </div>
-          </div>
+  const session = await auth();
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10"
-            >
-              Back home
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <header className="border-b border-slate-800 bg-slate-950">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-xs font-semibold text-white">
+              PP
+            </div>
+            <span className="font-semibold">ProofPad</span>
+          </Link>
+
+          {/* Right side */}
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-sm text-slate-300 hover:text-white">
+              Home
             </Link>
+
+            {session?.user?.email && (
+              <span className="text-xs text-slate-400">
+                {session.user.email}
+              </span>
+            )}
+
             <LogoutButton />
           </div>
         </div>
+      </header>
 
-        <div className="mt-6">{children}</div>
-      </div>
+      <main>{children}</main>
     </div>
   );
 }

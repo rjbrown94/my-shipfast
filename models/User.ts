@@ -1,49 +1,26 @@
-import mongoose from "mongoose";
-import toJSON from "./plugins/toJSON";
+import mongoose, { Schema } from "mongoose";
 
-// USER SCHEMA
-const userSchema = new mongoose.Schema(
+const UserSchema = new Schema(
   {
-    name: {
-      type: String,
-      trim: true,
-    },
     email: {
       type: String,
-      trim: true,
+      required: true,
+      unique: true,
       lowercase: true,
-      private: true,
+      trim: true,
     },
-    image: {
+    passwordHash: { type: String, required: true },
+
+    resetPasswordToken: {
       type: String,
+      default: null,
     },
-    // Used in the Stripe webhook to identify the user in Stripe and later create Customer Portal or prefill user credit card details
-    customerId: {
-      type: String,
-      validate(value: string) {
-        return value.includes("cus_");
-      },
-    },
-    // Used in the Stripe webhook. should match a plan in config.js file.
-    priceId: {
-      type: String,
-      validate(value: string) {
-        return value.includes("price_");
-      },
-    },
-    // Used to determine if the user has access to the product—it's turn on/off by the Stripe webhook
-    hasAccess: {
-      type: Boolean,
-      default: false,
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
     },
   },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-  }
+  { timestamps: true, collection: "users" },
 );
 
-// add plugin that converts mongoose to json
-userSchema.plugin(toJSON);
-
-export default (mongoose.models.User || mongoose.model("User", userSchema)) as mongoose.Model<any>;
+export default mongoose.models.User || mongoose.model("User", UserSchema);

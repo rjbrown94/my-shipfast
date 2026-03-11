@@ -47,18 +47,22 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
 
       if (!res.ok) {
         setError(data?.error || "Could not create account.");
         return;
       }
 
-      // 👇 THIS IS THE IMPORTANT PART
-      // After account creation go to pricing page
       router.push("/pricing");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -88,10 +92,9 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">
+              <label className="mb-2 block text-sm font-medium text-slate-200">
                 Email
               </label>
-
               <input
                 type="email"
                 value={email}
@@ -102,10 +105,9 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">
+              <label className="mb-2 block text-sm font-medium text-slate-200">
                 Password
               </label>
-
               <input
                 type="password"
                 value={password}
@@ -116,10 +118,9 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">
+              <label className="mb-2 block text-sm font-medium text-slate-200">
                 Confirm password
               </label>
-
               <input
                 type="password"
                 value={confirmPassword}
@@ -138,7 +139,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-70"
+              className="w-full rounded-xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? "Creating account..." : "Create account"}
             </button>

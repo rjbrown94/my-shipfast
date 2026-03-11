@@ -1,25 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 
-export default function RegisterPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || "";
 
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setMessage("");
 
-    if (!email.trim() || !password.trim()) {
-      setError("Email and password are required.");
+    if (!token) {
+      setError("Missing reset token.");
+      return;
+    }
+
+    if (!password.trim()) {
+      setError("Password is required.");
       return;
     }
 
@@ -36,13 +43,13 @@ export default function RegisterPage() {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/register", {
+      const res = await fetch("/api/reset-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email.trim().toLowerCase(),
+          token,
           password,
         }),
       });
@@ -50,13 +57,15 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data?.error || "Could not create account.");
+        setError(data?.error || "Could not reset password.");
         return;
       }
 
-      // 👇 THIS IS THE IMPORTANT PART
-      // After account creation go to pricing page
-      router.push("/pricing");
+      setMessage("Password updated. Redirecting to login...");
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -70,42 +79,26 @@ export default function RegisterPage() {
         <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/20">
           <div className="mb-8">
             <Link
-              href="/"
-              className="text-sm text-slate-300 hover:text-slate-100"
+              href="/login"
+              className="text-sm text-slate-300 transition hover:text-slate-100"
             >
-              ← Back home
+              ← Back to login
             </Link>
 
             <h1 className="mt-6 text-3xl font-bold tracking-tight">
-              Create your ProofPad account
+              Reset your password
             </h1>
 
             <p className="mt-2 text-sm text-slate-300">
-              Start organizing receipts, screenshots, and contracts in one
-              place.
+              Enter a new password for your account.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">
-                Email
+              <label className="mb-2 block text-sm font-medium text-slate-200">
+                New password
               </label>
-
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-white/20"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">
-                Password
-              </label>
-
               <input
                 type="password"
                 value={password}
@@ -116,10 +109,9 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">
-                Confirm password
+              <label className="mb-2 block text-sm font-medium text-slate-200">
+                Confirm new password
               </label>
-
               <input
                 type="password"
                 value={confirmPassword}
@@ -135,24 +127,20 @@ export default function RegisterPage() {
               </div>
             ) : null}
 
+            {message ? (
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                {message}
+              </div>
+            ) : null}
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-70"
+              className="w-full rounded-xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? "Updating..." : "Update password"}
             </button>
           </form>
-
-          <p className="mt-6 text-center text-sm text-slate-300">
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-semibold text-slate-100 hover:underline"
-            >
-              Log in
-            </Link>
-          </p>
         </div>
       </div>
     </main>

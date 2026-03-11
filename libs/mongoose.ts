@@ -16,7 +16,7 @@ async function dbConnect() {
       .connect(MONGODB_URI, {
         dbName: "shipfast",
       })
-      .then((mongoose) => mongoose);
+      .then((m) => m);
   }
 
   cached.conn = await cached.promise;

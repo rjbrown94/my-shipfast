@@ -1,16 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-
-type Session = {
-  email: string;
-  createdAt: string;
-};
-
-const STORAGE_SESSION_KEY = "proofpad_session";
-const STORAGE_PLAN_KEY = "proofpad_plan";
+import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,97 +11,172 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const canSubmit = useMemo(() => {
-    return email.trim().includes("@") && password.trim().length >= 1;
-  }, [email, password]);
+  const [loading, setLoading] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  function saveSession(session: Session) {
-    localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(session));
-  }
-
-  function routeAfterLogin() {
-    const plan = localStorage.getItem(STORAGE_PLAN_KEY);
-    if (!plan) router.push("/pricing");
-    else router.push("/dashboard");
-  }
-
-  function onSubmit(e: React.FormEvent) {
+  async function handlePasswordLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!canSubmit) return;
+    setError("");
+    setMessage("");
 
-    // Mock login
-    saveSession({
-      email: email.trim().toLowerCase(),
-      createdAt: new Date().toISOString(),
-    });
+    if (!email.trim() || !password.trim()) {
+      setError("Email and password are required.");
+      return;
+    }
 
-    routeAfterLogin();
+    try {
+      setLoading(true);
+
+      const result = await signIn("credentials", {
+        email: email.trim().toLowerCase(),
+        password,
+        redirect: false,
+      });
+
+      if (!result || result.error) {
+        setError("Invalid email or password.");
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleMagicLink() {
+    setError("");
+    setMessage("");
+
+    if (!email.trim()) {
+      setError("Enter your email first.");
+      return;
+    }
+
+    try {
+      setMagicLoading(true);
+
+      const result = await signIn("resend", {
+        email: email.trim().toLowerCase(),
+        redirect: false,
+        callbackUrl: "/pricing",
+      });
+
+      if (result?.error) {
+        setError("Could not send login link.");
+        return;
+      }
+
+      setMessage("Check your email. We sent you a secure login link.");
+    } catch {
+      setError("Could not send login link.");
+    } finally {
+      setMagicLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center px-6 py-16">
-      <div className="w-full max-w-xl">
-        <div className="rounded-3xl border border-slate-800 bg-slate-950/60 backdrop-blur px-6 py-8 sm:px-10 sm:py-10 shadow-[0_0_0_1px_rgba(255,255,255,0.02),0_40px_120px_rgba(0,0,0,0.6)]">
-          <div className="mb-6">
-            <div className="text-xs tracking-widest text-slate-400">
-              PROOFPAD
-            </div>
-            <h1 className="mt-2 text-3xl sm:text-4xl font-extrabold leading-tight">
-              Log in
+    <main className="min-h-screen bg-slate-950 text-slate-50">
+      <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/20">
+          <div className="mb-8">
+            <Link
+              href="/"
+              className="text-sm text-slate-300 transition hover:text-slate-100"
+            >
+              ← Back home
+            </Link>
+
+            <h1 className="mt-6 text-3xl font-bold tracking-tight">
+              Log in to ProofPad
             </h1>
-            <p className="mt-2 text-slate-300">
-              Get back to your proof, disputes, and share links.
+
+            <p className="mt-2 text-sm text-slate-300">
+              Access your disputes, proof uploads, and PDF exports.
             </p>
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Email</label>
+              <label className="mb-2 block text-sm font-medium text-slate-200">
+                Email
+              </label>
               <input
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@email.com"
-                className="w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400/40"
-                autoComplete="email"
+                placeholder="you@example.com"
+                className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-white/20"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-slate-200">
                 Password
               </label>
               <input
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                type="password"
-                className="w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400/40"
-                autoComplete="current-password"
+                placeholder="Enter your password"
+                className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-white/20"
               />
             </div>
 
+            {error ? (
+              <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {error}
+              </div>
+            ) : null}
+
+            {message ? (
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                {message}
+              </div>
+            ) : null}
+
             <button
               type="submit"
-              disabled={!canSubmit}
-              className="w-full rounded-xl px-4 py-3 font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_20px_60px_rgba(16,185,129,0.25)]"
+              disabled={loading}
+              className="w-full rounded-xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Log in → Continue
+              {loading ? "Logging in..." : "Log in"}
             </button>
-
-            <div className="flex items-center justify-between text-sm pt-2">
-              <Link href="/" className="text-slate-300 hover:text-white">
-                ← Back home
-              </Link>
-              <Link
-                href="/register"
-                className="text-slate-300 hover:text-white"
-              >
-                Create an account
-              </Link>
-            </div>
           </form>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-xs uppercase tracking-wide text-slate-400">
+              or
+            </span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleMagicLink}
+            disabled={magicLoading}
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-semibold text-slate-100 transition hover:border-white/20 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {magicLoading ? "Sending link..." : "Email me a login link"}
+          </button>
+
+          <p className="mt-6 text-center text-sm text-slate-300">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/register"
+              className="font-semibold text-slate-100 hover:underline"
+            >
+              Create one
+            </Link>
+          </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
